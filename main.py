@@ -16,8 +16,10 @@ class RecipeScraper:
             url = f"{self.base_url}/recipes/?page={page_num}"
             response = requests.get(url)
             soup = BeautifulSoup(response.content, "html.parser")
-            links = soup.find_all("a", class_="card__titleLink manual-link-behavior")
-            recipe_urls.extend([self.base_url + link["href"] for link in links])
+            links = soup.find_all(
+                "a", class_="card__titleLink manual-link-behavior")
+            recipe_urls.extend([self.base_url + link["href"]
+                               for link in links])
             next_button = soup.find("a", class_="card__next")
             if next_button:
                 page_num += 1
@@ -30,9 +32,12 @@ class RecipeScraper:
         response = requests.get(url)
         soup = BeautifulSoup(response.content, "html.parser")
         title = soup.find("h1", class_="headline").text.strip()
-        ingredients = [li.text.strip() for li in soup.find_all("li", class_="ingredients-item")]
-        instructions = [li.text.strip() for li in soup.find_all("li", class_="step")]
-        rating = float(soup.find("div", class_="rating-stars")["data-ratingstars"])
+        ingredients = [li.text.strip()
+                       for li in soup.find_all("li", class_="ingredients-item")]
+        instructions = [li.text.strip()
+                        for li in soup.find_all("li", class_="step")]
+        rating = float(soup.find("div", class_="rating-stars")
+                       ["data-ratingstars"])
         return {
             "title": title,
             "ingredients": ingredients,
@@ -52,15 +57,18 @@ class UserPreferenceAnalyzer:
     def get_user_preferences(self):
         print("Please enter your cuisine preferences (comma-separated): ")
         cuisines = input().strip().split(",")
-        self.preference_data["cuisine_preferences"] = [cuisine.strip().lower() for cuisine in cuisines]
+        self.preference_data["cuisine_preferences"] = [
+            cuisine.strip().lower() for cuisine in cuisines]
 
         print("Please enter your dietary restrictions (comma-separated): ")
         restrictions = input().strip().split(",")
-        self.preference_data["dietary_restrictions"] = [restriction.strip().lower() for restriction in restrictions]
+        self.preference_data["dietary_restrictions"] = [
+            restriction.strip().lower() for restriction in restrictions]
 
         print("Please enter your ingredient preferences (comma-separated): ")
         ingredients = input().strip().split(",")
-        self.preference_data["ingredient_preferences"] = [ingredient.strip().lower() for ingredient in ingredients]
+        self.preference_data["ingredient_preferences"] = [
+            ingredient.strip().lower() for ingredient in ingredients]
 
     def analyze_preferences(self, recipe_data):
         analyzed_data = []
@@ -88,7 +96,8 @@ class UserPreferenceAnalyzer:
 
             analyzed_data.append(analyzed_recipe)
 
-        analyzed_data.sort(key=lambda x: (x["match_score"], x["rating"]), reverse=True)
+        analyzed_data.sort(key=lambda x: (
+            x["match_score"], x["rating"]), reverse=True)
         return analyzed_data
 
 
@@ -101,9 +110,11 @@ class RecipeRecommendationEngine:
         recipe_titles = [recipe["title"] for recipe in self.recipe_data]
         tfidf_matrix = tfidf_vectorizer.fit_transform(recipe_titles)
         title_index = recipe_titles.index(recipe_title)
-        cosine_similarities = cosine_similarity(tfidf_matrix[title_index], tfidf_matrix).flatten()
+        cosine_similarities = cosine_similarity(
+            tfidf_matrix[title_index], tfidf_matrix).flatten()
         similar_indices = cosine_similarities.argsort()[::-1][1:4]
-        similar_recipes = [self.recipe_data[idx]["title"] for idx in similar_indices]
+        similar_recipes = [self.recipe_data[idx]["title"]
+                           for idx in similar_indices]
         return similar_recipes
 
 
@@ -170,7 +181,8 @@ class RecipeRecommender:
         self.scraper = RecipeScraper()
         self.recipe_data = self.scrape_recipes(num_recipes)
         self.preference_analyzer = UserPreferenceAnalyzer()
-        self.recommendation_engine = RecipeRecommendationEngine(self.recipe_data)
+        self.recommendation_engine = RecipeRecommendationEngine(
+            self.recipe_data)
         self.nutritional_analyzer = NutritionalAnalyzer(api_key)
         self.ui = UserInterface(self.recipe_data)
 
